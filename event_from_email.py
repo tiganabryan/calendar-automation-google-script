@@ -1,5 +1,7 @@
 import os
 from dotenv import load_dotenv
+import re
+
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -49,19 +51,20 @@ try:
 
     # print the subjects of all matching messages
     if "messages" in response:
-        print(f'Found {len(response["messages"])} messages:')
-
+        # print(f'Found {len(response["messages"])} messages:')
         for message in response["messages"]:
             msg = (
                 service.users().messages().get(userId="me", id=message["id"]).execute()
             )
-
             headers = msg["payload"]["headers"]
-
             for header in headers:
                 if header["name"] == "Subject":
                     openMailSubject = header["value"]
-                    print(f"Subject: {openMailSubject}")
+                    if re.search(
+                        r"Hooray! You have a new class at ([a-zA-Z]{3}, [a-zA-Z]{3} \d{1,2}, \d{4} \d{1,2}:\d{2} [AP]M [a-zA-Z ]+)$",
+                        openMailSubject,
+                    ):
+                        print(f"Subject: {openMailSubject}")
 
     else:
         print("No messages found.")
